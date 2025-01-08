@@ -1,8 +1,9 @@
 import numpy as np
 
 #adapted from https://github.com/forgi86/pytorch-ident/blob/master/torchid/metrics.py
+from nonlinear_benchmarks.utilities import Input_output_data
 
-def RMSE(y_true, y_model, time_axis=0):
+def RMSE(y_true, y_model, n_init=0, time_axis=0):
     """ Computes the Root Mean Square Error (RMSE) (also called RMS).
 
     The RMSE index is computed separately on each channel as:
@@ -10,10 +11,13 @@ def RMSE(y_true, y_model, time_axis=0):
 
     Parameters
     ----------
-    y_true : np.array
+    y_true : np.array | Input_output_data
         Array of true values. 
-    y_model : np.array
+    y_model : np.array | Input_output_data
         Array of predicted values. 
+    n_init : int
+        Number of samples that need to be removed due to usage in state initialization
+        n_init will be set to y_true.state_initialization_window_length if isinstance(y_true, Input_output_data)
     time_axis : int
         Time axis. All other axes define separate channels.
 
@@ -23,12 +27,18 @@ def RMSE(y_true, y_model, time_axis=0):
         Array of RMSE values.
 
     """
+    if isinstance(y_true, Input_output_data):
+        n_init = y_true.state_initialization_window_length
+        n_init = 0 if n_init==None else n_init
+        y_true = y_true.y
+    if isinstance(y_model, Input_output_data):
+        y_model = y_model.y
     assert y_true.shape == y_model.shape, f'y_true and y_model should have the same shape, currently y_true.shape={y_true.shape} and y_model.shape={y_model.shape}'
 
-    RMSE_val = np.sqrt(np.mean((y_model - y_true)**2, axis=time_axis))
+    RMSE_val = np.sqrt(np.mean((y_model[n_init:] - y_true[n_init:])**2, axis=time_axis))
     return RMSE_val
 
-def NRMSE(y_true, y_model, time_axis=0, std_tolerance=1e-10):
+def NRMSE(y_true, y_model, n_init=0, time_axis=0, std_tolerance=1e-10):
     """ Computes the Normalized Root Mean Square Error (NRMSE) (also called NRMS)
 
     The NRMSE index is computed separately on each channel as:
@@ -38,10 +48,13 @@ def NRMSE(y_true, y_model, time_axis=0, std_tolerance=1e-10):
 
     Parameters
     ----------
-    y_true : np.array
+    y_true : np.array | Input_output_data
         Array of true values.
-    y_model : np.array
+    y_model : np.array | Input_output_data
         Array of predicted values.
+    n_init : int
+        Number of samples that need to be removed due to usage in state initialization
+        n_init will be set to y_true.state_initialization_window_length if isinstance(y_true, Input_output_data)
     time_axis : int
         Time axis. All other axes define separate channels.
     std_tolerance : float
@@ -55,14 +68,18 @@ def NRMSE(y_true, y_model, time_axis=0, std_tolerance=1e-10):
 
     """
     
-    RMSE_val = RMSE(y_true, y_model, time_axis=time_axis)
-    std = np.std(y_true, axis=time_axis)
+    RMSE_val = RMSE(y_true, y_model, n_init=n_init, time_axis=time_axis)
+    if isinstance(y_true, Input_output_data):
+        n_init = y_true.state_initialization_window_length
+        n_init = 0 if n_init==None else n_init
+        y_true = y_true.y
+    std = np.std(y_true[n_init:], axis=time_axis)
     assert np.all(std>std_tolerance), 'the standard deviation of y_true is almost zero! std={std}'
     NRMSE_val = RMSE_val/std
     return NRMSE_val
 
 
-def R_squared(y_true, y_model, time_axis=0):
+def R_squared(y_true, y_model, n_init=0, time_axis=0):
     """ Computes the coefficient of determination R^2.
 
     The R^2 is computed separately on each channel. Given by
@@ -73,9 +90,9 @@ def R_squared(y_true, y_model, time_axis=0):
 
     Parameters
     ----------
-    y_true : np.array
+    y_true : np.array | Input_output_data
         Array of true values.  If must be at least 2D.
-    y_model : np.array
+    y_model : np.array | Input_output_data
         Array of predicted values.  If must be compatible with y_true'
     time_axis : int
         Time axis. All other axes define separate channels.
@@ -86,10 +103,10 @@ def R_squared(y_true, y_model, time_axis=0):
         Array of r_squared value.
     """
 
-    return 1.0 - NRMSE(y_true, y_model, time_axis=time_axis)**2
+    return 1.0 - NRMSE(y_true, y_model, n_init=0, time_axis=time_axis)**2
 
 
-def MAE(y_true, y_model, time_axis=0):
+def MAE(y_true, y_model, n_init=0, time_axis=0):
     """ Computes the Mean Absolute value Error (MAE)
 
     The MAE is computed separately on each channel as:
@@ -109,13 +126,19 @@ def MAE(y_true, y_model, time_axis=0):
     MSE_val : np.array
         Array of mean absolute value errors.
     """
+    if isinstance(y_true, Input_output_data):
+        n_init = y_true.state_initialization_window_length
+        n_init = 0 if n_init==None else n_init
+        y_true = y_true.y
+    if isinstance(y_model, Input_output_data):
+        y_model = y_model.y
     assert y_true.shape == y_model.shape, f'y_true and y_model should have the same shape, currently y_true.shape={y_true.shape} and y_model.shape={y_model.shape}'
 
-    MSE_val = np.mean(np.abs(y_true - y_model), axis=time_axis)
+    MSE_val = np.mean(np.abs(y_true[n_init:] - y_model[n_init:]), axis=time_axis)
     return MSE_val
 
 
-def fit_index(y_true, y_model, time_axis=0):
+def fit_index(y_true, y_model, n_init=0, time_axis=0):
     """ Computes the per-channel fit index.
 
     The fit index is commonly used in System Identification. See the definition in the System Identification Toolbox
@@ -143,7 +166,7 @@ def fit_index(y_true, y_model, time_axis=0):
 
     """
 
-    fit_index_val = 100*(1 - NRMSE(y_true, y_model, time_axis=time_axis))
+    fit_index_val = 100*(1 - NRMSE(y_true, y_model, n_init=n_init, time_axis=time_axis))
     return fit_index_val
 
 
