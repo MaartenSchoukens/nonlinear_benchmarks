@@ -71,7 +71,7 @@ Benchmark Results Submission template: [submission_examples/EMPS.py](submission_
 
 ```python
 train_val, test = nonlinear_benchmarks.CED()
-print(test[0].state_initialization_window_length) # = 4
+print(test[0].state_initialization_window_length) # = 10
 (train_val_u_1, train_val_y_1), (train_val_u_2, train_val_y_2) = train_val
 (test_u_1, test_y_1), (test_u_2, test_y_2) = test
 ```
@@ -89,7 +89,7 @@ Benchmark Results Submission template: [submission_examples/CED.py](submission_e
 
 ```python
 train_val, test = nonlinear_benchmarks.Cascaded_Tanks()
-print(test.state_initialization_window_length) # = 4
+print(test.state_initialization_window_length) # = 50
 train_val_u, train_val_y = train_val
 test_u, test_y = test
 ```
