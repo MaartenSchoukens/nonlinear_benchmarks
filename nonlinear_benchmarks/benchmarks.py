@@ -102,8 +102,8 @@ def CED(train_test_split=True, data_file_locations=False, dir_placement=None, fo
         test = datasets[0][400:], datasets[1][400:]
         test[0].name = 'test CED low input amplitude'
         test[1].name = 'test CED high input amplitude'
-        test[0].state_initialization_window_length = 4
-        test[1].state_initialization_window_length = 4
+        test[0].state_initialization_window_length = 10
+        test[1].state_initialization_window_length = 10
         return atleast_2d_fun(train_val, test, apply=atleast_2d)
     else:
         return atleast_2d_fun(datasets, apply=atleast_2d)
@@ -130,7 +130,7 @@ def Cascaded_Tanks(train_test_split=True, data_file_locations=False, dir_placeme
     if train_test_split:
         train_val = datasets[0]
         test = datasets[1]
-        test.state_initialization_window_length = 5
+        test.state_initialization_window_length = 50
         return always_return_tuples_of_datasets_fun(*atleast_2d_fun(train_val, test, apply=atleast_2d), apply=always_return_tuples_of_datasets)
     else:
         datasets[0].name, datasets[1].name = 'Cascaded_Tanks first dataset', 'Cascaded_Tanks second dataset'
