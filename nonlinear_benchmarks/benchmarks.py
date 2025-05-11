@@ -250,11 +250,11 @@ def ParWH(train_test_split=True, data_file_locations=False, dir_placement=None, 
     yEst = out['yEst'].reshape((16384*2,20,5))
     for phase in range(0,20):
         for amp in range(0,5):
-            datafiles.append(Input_output_data(u=uEst[:, phase, amp],y=yEst[:, phase, amp], sampling_time=1/fs, name=f'Est-phase-{phase}-amp-{amp}'))
+            datafiles.append(Input_output_data(u=uEst[:, phase, amp],y=yEst[:, phase, amp], sampling_time=1/fs, name=f'Est-phase-{phase}-amp-{amp}', state_initialization_window_length=50))
     
     uVal = out['uVal'].reshape((16384*2,1,5))
     yVal = out['yVal'].reshape((16384*2,1,5))
-    data = [Input_output_data(u=ui[0],y=yi[0], sampling_time=1/fs,name=f'Val-amp-{amp}') for amp,(ui,yi) in enumerate(zip(uVal.T,yVal.T))]
+    data = [Input_output_data(u=ui[0],y=yi[0], sampling_time=1/fs,name=f'Val-amp-{amp}', state_initialization_window_length=50) for amp,(ui,yi) in enumerate(zip(uVal.T,yVal.T))]
     datafiles_test.extend(data) if train_test_split else datafiles.extend(data)
     
     #is filtered signal, hence, would require extrapolation.
@@ -306,7 +306,7 @@ def F16(train_test_split=True, output_index=0, data_file_locations=False, dir_pl
         #y = one of the ys, multi objective regression?
         name = file.split('/')[-1]
         if 'SpecialOddMSine' not in name:
-            data = Input_output_data(u=Force,y=[y1,y2,y3][output_index], sampling_time=1/Fs, name=name)
+            data = Input_output_data(u=Force,y=[y1,y2,y3][output_index], sampling_time=1/Fs, name=name, state_initialization_window_length=50)
             if train_test_split:
                 if 'Validation' in name:
                     test.append(data)
