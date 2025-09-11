@@ -147,7 +147,7 @@ train_val #100 datsets with each a length of 32768 with 2 periods created with m
 test #5 datasets with each a length of 32768 with 2 periods of multisine inputs with 5 different amplitudes
 ```
 
-Benchmark Results Submission template: [submission_examples/parallelWH.py](submission_examples/parallelWH.py) (report accuracy in [mV])
+Benchmark Results Submission template: [submission_examples/ParallelWH.py](submission_examples/ParallelWH.py) (report accuracy in [mV])
 
 # Error Metrics
 
