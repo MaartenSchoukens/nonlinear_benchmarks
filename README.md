@@ -135,7 +135,7 @@ train_val #8 datasets with lenghts 73728 and 108477
 test #6 datasets with lenghts 73728 and 108477
 ```
 
-No submission template created yet.
+Benchmark Results Submission template: [submission_examples/F16.py](submission_examples/F16.py)
 
 ## [Parallel Wiener-Hammerstein System](https://www.nonlinearbenchmark.org/benchmarks/parallel-wiener-hammerstein)
 
@@ -147,7 +147,7 @@ train_val #100 datsets with each a length of 32768 with 2 periods created with m
 test #5 datasets with each a length of 32768 with 2 periods of multisine inputs with 5 different amplitudes
 ```
 
-No submission template created yet.
+Benchmark Results Submission template: [submission_examples/parallelWH.py](submission_examples/parallelWH.py) (report accuracy in [mV])
 
 # Error Metrics
 
