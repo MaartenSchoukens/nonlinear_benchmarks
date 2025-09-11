@@ -26,9 +26,9 @@ from nonlinear_benchmarks.error_metrics import RMSE
 
 all_RMSEs = []
 for i, test, prediction in zip(range(len(tests)), tests, y_tests_model):
-    test_RMSE = 1000*RMSE(test.y[n:], prediction[n:])
+    test_RMSE = RMSE(test.y[n:], prediction[n:])
     all_RMSEs.append(test_RMSE)
-    print(f'test set {i+1}, {test_RMSE = :.2f} mv')
+    print(f'test set {i+1}, {test_RMSE = :.2f}')
 
 
 
