@@ -82,7 +82,9 @@ def CED(train_test_split=True, data_file_locations=False, dir_placement=None, fo
     in combination of PRBS dataset with amplitude 1.'''
 
     #http://www.it.uu.se/research/publications/reports/2017-024/2017-024-nc.pdf
-    url = 'http://www.it.uu.se/research/publications/reports/2017-024/CoupledElectricDrivesDataSetAndReferenceModels.zip' if url is None else url
+    #https://uu.diva-portal.org/smash/get/diva2:1165531/FULLTEXT01.zip
+    #url = 'http://www.it.uu.se/research/publications/reports/2017-024/CoupledElectricDrivesDataSetAndReferenceModels.zip' if url is None else url
+    url = 'https://uu.diva-portal.org/smash/get/diva2:1165531/FULLTEXT01.zip' if url is None else url
     download_size= 278528
     save_dir = cashed_download(url,'CED',dir_placement=dir_placement,download_size=download_size,force_download=force_download)
 
