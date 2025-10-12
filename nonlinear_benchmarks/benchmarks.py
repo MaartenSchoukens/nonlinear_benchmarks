@@ -162,26 +162,39 @@ def WienerHammerBenchMark(train_test_split=True, data_file_locations=False, dir_
     return always_return_tuples_of_datasets_fun(*atleast_2d_fun(train, test, apply=atleast_2d), apply=always_return_tuples_of_datasets)
 
 def Silverbox(train_test_split=True, data_file_locations=False, dir_placement=None, force_download=False, url=None, \
-    atleast_2d=False, always_return_tuples_of_datasets=False):
-    '''The Silverbox system can be seen as an electronic implementation of the Duffing oscillator. It is build as a 
-    2nd order linear time-invariant system with a 3rd degree polynomial static nonlinearity around it in feedback. 
+    atleast_2d=False, always_return_tuples_of_datasets=False, return_multisine_realizations=False):
+    '''The Silverbox system can be seen as an electronic implementation of the Duffing oscillator. It is build as a
+    2nd order linear time-invariant system with a 3rd degree polynomial static nonlinearity around it in feedback.
     This type of dynamics are, for instance, often encountered in mechanical systems.
 
-    The provided data is part of a previously published ECC paper available online. A technical note describing the 
+    The provided data is part of a previously published ECC paper available online. A technical note describing the
     Silverbox benchmark can be found here. All the provided data (.mat file format) on the Silverbox system is available
     for download here. This .zip file contains the Silverbox dataset as specified in the benchmark document (V1 is the
-    input record, while V2 is the measured output), extended with .csv version of the same data and an extra data record 
+    input record, while V2 is the measured output), extended with .csv version of the same data and an extra data record
     containing a Schroeder phase multisine measurement.
 
     Please refer to the Silverbox benchmark as:
 
-    T. Wigren and J. Schoukens. Three free data sets for development and benchmarking in nonlinear system identification. 
+    T. Wigren and J. Schoukens. Three free data sets for development and benchmarking in nonlinear system identification.
     2013 European Control Conference (ECC), pp.2933-2938 July 17-19, 2013, Zurich, Switzerland.
 
     Previously published results on the Silverbox benchmark are listed in the history section of this webpage.
 
     Special thanks to Johan Schoukens for creating this benchmark, and to Torbjörn Wigren for hosting this benchmark.
+
+    Parameters:
+        return_multisine_realizations (bool): If True, returns the 10 separate multisine realizations for frequency
+            domain identification. 
     '''
+    # Check for incompatible parameter combinations
+    if train_test_split and return_multisine_realizations:
+        raise ValueError(
+            "return_multisine_realizations cannot be used with train_test_split=True. "
+            "return_multisine_realizations returns data for frequency domain identification "
+            "purposes. The data is split differently from the default. For the main benchmark, please set "
+            "return_multisine_realizations=False."
+        )
+
     # url = 'http://www.nonlinearbenchmark.org/FILES/BENCHMARKS/SILVERBOX/SilverboxFiles.zip' #old
     url = 'https://drive.google.com/file/d/17iS-6oBUUgrmiAcrZoG9S5sOaljZnDSy/view' if url is None else url
     download_size=5793999
@@ -195,11 +208,36 @@ def Silverbox(train_test_split=True, data_file_locations=False, dir_placement=No
 
     out = loadmat(d2) #train test
     u,y = out['V1'][0], out['V2'][0]
+
+    # Handle multisine realizations mode
+    if return_multisine_realizations:
+        # This partitioning is only valid for the SNLS80mV.mat, not the Schroeder!
+        # Extract 10 realizations of 8192 samples each at predefined indices
+        N = 8192  # number of data points per realization
+        start_indices = [40986, 49678, 58370, 67062, 75754, 84446, 93138, 101830, 110522, 119214]
+
+        realizations = []
+        for k, start_idx in enumerate(start_indices):
+            # Extract this realization
+            u_real = u[start_idx:start_idx + N]
+            y_real = y[start_idx:start_idx + N]
+
+            realization = Input_output_data(
+                u=u_real,
+                y=y_real,
+                sampling_time=1/610.35,
+                name=f'SB multisine realization #{k+1}'
+            )
+            realizations.append(realization)
+
+        # Note: for using this data, it might be beneficial to demean both the input and the output
+        return atleast_2d_fun(realizations, apply=atleast_2d)
+
     data2 = Input_output_data(u=u,y=y, sampling_time=1/610.35, name='Silverbox Data All')
 
     if train_test_split:
         test_arrow_full = data2[100:40575]
-        test_arrow_full.name = 'test SB multisine'
+        test_arrow_full.name = 'test SB arrow'
         test_arrow_no_extrapolation = test_arrow_full[:32000] #keep init=50
         test_arrow_no_extrapolation.name = 'test SB arrow no extrapolation'
 
