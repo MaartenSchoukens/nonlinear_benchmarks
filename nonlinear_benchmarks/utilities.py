@@ -1,17 +1,17 @@
 
 
-import urllib.request
-from urllib import request
 import os
-import os.path
+import ssl
+from http.client import IncompleteRead
+from numbers import Number
 from pathlib import Path
 from sys import platform
-import shutil
-import progressbar
-import numpy as np
-from numbers import Number
+import urllib
 
+import numpy as np
+import progressbar
 import requests
+import shutil
 
 class Input_output_data:
     def __init__(self, u, y, sampling_time=None, name=None, state_initialization_window_length=None):
@@ -150,7 +150,6 @@ class MyProgressBar():
         else:
             self.pbar.finish()
 
-
 def cashed_download(url,name_dir,zip_name=None,dir_placement=None,download_size=None,force_download=False,zipped=True):
     '''url is the file to be downloaded
     name_dir is the directory name where the file and the contents of the file will be saved
@@ -190,25 +189,37 @@ def cashed_download(url,name_dir,zip_name=None,dir_placement=None,download_size=
     if 'drive.google' in url:
         download_file_from_google_drive(url, save_loc)
     else:
-        from http.client import IncompleteRead
+        # Temporarily disable SSL verification for this download
+        original_context = ssl._create_default_https_context
+        
         tries = 0
         while True:
             try:
+                # Monkey patch SSL verification
+                ssl._create_default_https_context = ssl._create_unverified_context
+                
                 if download_size is None:
-                    urllib.request.urlretrieve(url, save_loc)# MyProgressBar() is a steam so no length is given
+                    urllib.request.urlretrieve(url, save_loc)
                     break
                 else:
                     urllib.request.urlretrieve(url, save_loc, MyProgressBar(download_size=int(download_size)))
                     break
-            except IncompleteRead:
+                    
+            except (IncompleteRead, urllib.error.URLError) as e:
                 tries += 1
-                print('IncompleteRead download failed, re-downloading file')
-                download_size = None
-                if tries==5:
-                    assert False, 'Download Fail 5 times exiting.'
+                print(f'Download attempt {tries} failed: {e}')
+                if isinstance(e, IncompleteRead):
+                    print('IncompleteRead download failed, re-downloading file')
+                    download_size = None
+                if tries == 5:
+                    raise Exception(f'Download failed after 5 attempts: {e}')
+            finally:
+                # Always restore original SSL context
+                ssl._create_default_https_context = original_context
 
-
-    if not zipped: return save_dir
+    if not zipped: 
+        return save_dir
+    
     print('extracting file...')
     print(f'{save_loc=}')
     ending = file_name.split('.')[-1]
@@ -229,7 +240,6 @@ def cashed_download(url,name_dir,zip_name=None,dir_placement=None,download_size=
     else:
         raise NotImplementedError(f'file {file_name} type not implemented')
     return save_dir
-
 
 def download_file_from_google_drive(url, destination):
     id = url.split('/')[-2]
