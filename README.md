@@ -149,6 +149,18 @@ test #5 datasets with each a length of 32768 with 2 periods of multisine inputs 
 
 Benchmark Results Submission template: [submission_examples/ParallelWH.py](submission_examples/ParallelWH.py) (report accuracy in [mV])
 
+## [Fine Steering Mirror](https://www.nonlinearbenchmark.org/benchmarks/fine-steering-mirror)
+
+![image](figures/FineSteeringMirror.jpg)
+
+```python
+train_val, test = nonlinear_benchmarks.FineSteeringMirror() # system with nu=3 inputs and ny=3 outputs
+train_val # P=2 steady-state periods and R=6 realizations of a random-phase multisine of N=8192 samples each, stored as (N, {nu, ny}, R, P) tensors for RMS excitation amplitudes {100, 200, 300} mV. Input signals are orthogonal: in each consecutive group of 3 realizations (2 groups total), the random phases are chosen such that FRM estimation is optimally conditioned.
+test # (N, {nu, ny}, R_test, P) tensors with R_test=3 at the same RMS amplitudes. The input signals are again orthogonal.
+```
+
+Benchmark Results Submission template: [submission_examples/FineSteeringMirror.py](submission_examples/FineSteeringMirror.py) (report accuracy in [µm])
+
 # Error Metrics
 
 We also provide error metrics in `nonlinear_benchmarks.error_metrics`.

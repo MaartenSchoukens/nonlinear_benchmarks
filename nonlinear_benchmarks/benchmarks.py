@@ -320,3 +320,69 @@ def F16(train_test_split=True, output_index=0, data_file_locations=False, dir_pl
         return atleast_2d_fun(*train, apply=atleast_2d), atleast_2d_fun(*test, apply=atleast_2d)
     else:
         return atleast_2d_fun(*datasets, apply=atleast_2d)
+    
+def FineSteeringMirror(
+    train_test_split=True,
+    data_file_locations=False,
+    dir_placement=None,
+    force_download=False,
+    url=None,
+    atleast_2d=False,  # not applicable for this dataset
+    always_return_tuples_of_datasets=False,  # not applicable for this dataset
+):
+    """This benchmark dataset contains input-output data from the CubeSpec Fine Steering Mirror, a multi-input multi-output high-precision control platform used in a small satellite. Voltages applied to three piezo-actuators serve as inputs, while the mirror displacements measured at three non-collocated reference points serve as outputs.
+
+    The excitation signals are orthogonal random-phase multisines spanning a wide frequency range, and are applied at three different amplitude levels. The system behaves mostly linearly, but the presence of hysteresis in the piezo-actuators introduces dynamic nonlinearities, making the dataset well-suited for benchmarking nonlinear identification methods.
+    
+    Specifically, excitation levels of 100mV, 200mV, and 300mV are used, with frequencies up to 3000 Hz excited at a sampling frequency of 6400 Hz. At each amplitude level, the following train and test datasets are provided:
+        - Train: P=2 steady-state periods and R=6 realizations of a random-phase multisine of N=8192 samples each, stored as (N, {nu, ny}, R, P) tensors, where nu=ny=3 are the number of inputs and outputs, respectively. Input signals are constructed to be orthogonal; within each consecutive group of three realizations (two groups in total: {R1, R2, R3} and {R4, R5, R6}), the random phases are chosen such that FRM estimation is optimally conditioned. 
+        - Test: (N, {nu, ny}, R_test, P) tensors with R_test=3. The input signals are again orthogonal.
+        
+    The dataset is particularly well suited for frequency-domain identification, as it uses periodic multisine excitations and contains no transients. Key challenges mainly arise from its high dimensionality and include, e.g., model order selection, the decoupling of multivariate nonlinearities, and maintaining computational tractability during both identification and deployment.
+    
+    For a baseline example of fitting a 28th order linear state-space model to this dataset, see https://github.com/merijnfloren/fsm-benchmark-data.
+    """
+    
+    url = 'https://github.com/merijnfloren/fsm-benchmark-data/raw/refs/heads/main/data/combined_data.npz' if url is None else url
+    download_size = 19532226
+    
+    save_dir = cashed_download(
+        url,
+        'FineSteeringMirror',
+        dir_placement=dir_placement,
+        download_size=download_size,
+        force_download=force_download,
+        zipped=False,  # actually True but the file is .npz so we'll just load it with numpy
+    )
+    
+    data_loc = os.path.join(save_dir, 'combined_data.npz')
+    if data_file_locations:
+        return data_loc
+    
+    data = np.load(data_loc)
+    fs = 6400
+    amplitudes = ['100mV', '200mV', '300mV'] 
+    state_initialization_window_length = 50
+
+    data_train = []
+    data_test = []
+    for amp in amplitudes:
+        data_train.append(Input_output_data(
+            u=data[f'u_{amp}_train'],
+            y=data[f'y_{amp}_train'],
+            sampling_time=1/fs,
+            name=f'train {amp}',
+            state_initialization_window_length=state_initialization_window_length
+        ))
+        data_test.append(Input_output_data(
+            u=data[f'u_{amp}_test'],
+            y=data[f'y_{amp}_test'],
+            sampling_time=1/fs,
+            name=f'test {amp}',
+            state_initialization_window_length=state_initialization_window_length
+        ))
+        
+    if train_test_split:
+        return data_train, data_test
+    else:
+        return data_train + data_test
