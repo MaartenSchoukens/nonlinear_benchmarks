@@ -400,7 +400,7 @@ def FineSteeringMirror(
     data = np.load(data_loc)
     fs = 6400
     amplitudes = ['100mV', '200mV', '300mV'] 
-    state_initialization_window_length = 50
+    state_initialization_window_length = 100
 
     data_train = []
     data_test = []
