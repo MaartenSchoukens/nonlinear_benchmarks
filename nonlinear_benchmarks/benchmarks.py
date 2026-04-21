@@ -529,10 +529,11 @@ def NanoDrone(
 
     train_trajectories = ['square', 'random', 'chirp']
     test_trajectories = ['melon']
-    runs = [1, 2, 3]
+    train_runs = [1, 2, 3, 4]  # train trajectories have 4 runs each
+    test_runs = [1, 2, 3]  # melon has 3 runs
     date_tag = '20251017'
 
-    def load_split(trajectories, split_name):
+    def load_split(trajectories, split_name, runs):
         datasets = []
         for traj in trajectories:
             for run in runs:
@@ -555,8 +556,8 @@ def NanoDrone(
                 ))
         return datasets
 
-    data_train = load_split(train_trajectories, 'train')
-    data_test = load_split(test_trajectories, 'test')
+    data_train = load_split(train_trajectories, 'train', train_runs)
+    data_test = load_split(test_trajectories, 'test', test_runs)
 
     if train_test_split:
         return data_train, data_test

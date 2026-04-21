@@ -214,6 +214,29 @@ print(f'MAE: {MAE(y_true, y_model)} (Mean Absolute value Error)')
 print(f"fit index: {fit_index(y_true, y_model)} (https://arxiv.org/pdf/1902.00683.pdf page 31)")
 ```
 
+The NanoDrone benchmark uses a custom multi-horizon evaluation protocol with physically meaningful metrics (geodesic orientation error on SO(3), per-horizon MAE, and cumulative simulation error). These are provided separately in `nonlinear_benchmarks.nanodrone_error_metrics`:
+ 
+```python
+from nonlinear_benchmarks.nanodrone_error_metrics import compute_errors, compute_simerr, print_results
+ 
+# compute_errors(df, max_horizon=50)
+#   Returns dict with keys 'pos', 'vel', 'rot', 'omega', each mapping h -> MAE.
+#   df must contain ground truth columns:
+#     [t, x, y, z, vx, vy, vz, qx, qy, qz, qw, wx, wy, wz]
+#   and prediction columns: {state}_pred_h{1..max_horizon}
+ 
+# compute_simerr(metrics, max_horizon=50)
+#   Returns (sim_pos, sim_vel, sim_rot, sim_omega):
+#   cumulative MAE summed over h = 1..max_horizon  [m, m/s, rad, rad/s]
+ 
+# print_results(metrics, label='Model', max_horizon=50)
+#   Prints a formatted table at h=1, 10, 50 and SimErr,
+#   plus the 4 numbers to submit.
+```
+ 
+See [submission_examples/NanoDrone.py](submission_examples/NanoDrone.py) for a complete usage example.
+ 
+
 # Benchmark Result Submission
 
 If you would like to submit a benchmark result this can be done through this [google form](https://forms.gle/JF9zR9M9Td9GJgDx8). When reporting the benchmark results please use use the toolbox as follows;
