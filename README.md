@@ -1,4 +1,3 @@
-
 # nonlinear_benchmarks
  
 The official dataloader of [nonlinearbenchmark.org](http://www.nonlinearbenchmark.org/). This toolbox simplifies the process of downloading, loading, and splitting various datasets available on the website. It also provides basic instructions on submitting benchmark results.
@@ -161,6 +160,42 @@ test # (N, {nu, ny}, R_test, P) tensors with R_test=3 at the same RMS amplitudes
 
 Benchmark Results Submission template: [submission_examples/FineSteeringMirror.py](submission_examples/FineSteeringMirror.py) (report accuracy in [µm])
 
+## [NanoDrone](https://www.nonlinearbenchmark.org/benchmarks/nanodrone)
+
+![image](figures/NanoDrone_repeatability.jpg)
+
+```python
+train, test = nonlinear_benchmarks.NanoDrone()
+# train: 9 datasets (square/random/chirp x 3 runs), u.shape=(N, 4), y.shape=(N, 13)
+# test:  3 datasets (melon x 3 runs),                u.shape=(N, 4), y.shape=(N, 13)
+print(train[0].state_initialization_window_length) # = 50 (0.5 s at 100 Hz, for all datasets)
+
+sampling_time = train[0].sampling_time  # = 0.01 s (100 Hz)
+u_train, y_train = train[0]             # e.g. square run1 — or loop over all train datasets
+u_test,  y_test  = test[0]              # e.g. melon run1  — or loop over all test datasets
+
+# y columns: [x, y, z, vx, vy, vz, qx, qy, qz, qw, wx, wy, wz]
+# u columns: [m1_rads, m2_rads, m3_rads, m4_rads]
+
+# Optional: load body-frame accelerations as auxiliary outputs (not part of the standard benchmark)
+train, test = nonlinear_benchmarks.NanoDrone(include_accelerations=True)
+# y.shape=(N, 16) — last 3 columns are [ax_body, ay_body, az_body] in [m/s²]
+```
+
+This benchmark is based on real-world flight data from a Crazyflie 2.1 Brushless nano-quadrotor (~50 g),
+recorded in a motion-capture arena across four aggressive trajectories. The train/test split is at the
+trajectory level: Square, Random, and Chirp trajectories are used for training, while the Melon
+trajectory is reserved exclusively for testing, enforcing trajectory-level generalization.
+
+The evaluation protocol is based on multi-step open-loop prediction up to H=50 steps (0.5 s).
+Metrics are the mean absolute error (MAE) for position [m], linear velocity [m/s], orientation
+(geodesic distance on SO(3)) [rad], and angular velocity [rad/s], evaluated at horizons h=1, 10, 50
+and as a cumulative simulation error (SimErr = Σ MAE_h for h=1..50). Results are averaged across
+the 3 Melon test runs.
+
+Benchmark Results Submission template: [submission_examples/NanoDrone.py](submission_examples/NanoDrone.py)
+(report SimErr for position [m], linear velocity [m/s], orientation [rad], angular velocity [rad/s])
+
 # Error Metrics
 
 We also provide error metrics in `nonlinear_benchmarks.error_metrics`.
@@ -194,4 +229,3 @@ print(RMSE_result) #report this number
 ```
 
 For details specific to each benchmark see the submission template: [submission_examples/](submission_examples/)
-
