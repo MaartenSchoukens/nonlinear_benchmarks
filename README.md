@@ -49,6 +49,8 @@ pip install nonlinear-benchmarks
 
 Multiple datasets have been implemented with an official train test split which are given below. 
 
+The train data can be used for the training and validation of the model, while the test data cannot be used to make any estimate/decision during the modelling process. The test result can only be used to validate the final model quality.
+
 (p.s. datasets without an official train test split can be found in `nonlinear_benchmarks.not_splitted_benchmarks`)
 
 ## [Electro-Mechanical Positioning System (EMPS)](https://www.nonlinearbenchmark.org/benchmarks/emps)
