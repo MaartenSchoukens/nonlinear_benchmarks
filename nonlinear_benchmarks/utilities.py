@@ -1,5 +1,3 @@
-
-
 import os
 import ssl
 from http.client import IncompleteRead
