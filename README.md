@@ -162,7 +162,7 @@ test # (N, {nu, ny}, R_test, P) tensors with R_test=3 at the same RMS amplitudes
 
 Benchmark Results Submission template: [submission_examples/FineSteeringMirror.py](submission_examples/FineSteeringMirror.py) (report accuracy in [µm])
 
-## [NanoDrone](https://www.nonlinearbenchmark.org/benchmarks/nanodrone)
+## [Nano-Drone](https://www.nonlinearbenchmark.org/benchmarks/nano-drone)
 
 ![image](figures/NanoDrone_repeatability.jpg)
 
